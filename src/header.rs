@@ -1,28 +1,20 @@
-use thiserror::Error;
+use crate::error::ParseError;
 
 #[derive(PartialEq, Debug)]
 pub(crate) struct DnsHeader {
-    id: u16, // Packet Identifier (ID)	                16 bits	A random ID assigned to query packets. Response packets must reply with the same ID.
-    qr: PacketType, // Query/Response Indicator (QR)    1 bit	1 for a response packet, 0 for a query packet.
-    opcode: OpCode, // Operation Code (OPCODE)          4 bits	Specifies the kind of query in a message.
-    aa: bool, // Authoritative Answer (AA)	            1 bit	1 if the responding server "owns" the domain queried, i.e., it's authoritative.
-    tc: bool, // Truncation (TC)	                    1 bit	1 if the message is larger than 512 bytes. Always 0 in UDP responses.
-    rd: bool, // Recursion Desired (RD)	                1 bit	Sender sets this to 1 if the server should recursively resolve this query, 0 otherwise.
-    ra: bool, // Recursion Available (RA)	            1 bit	Server sets this to 1 to indicate that recursion is available.
-    z: u8, // Reserved (Z)	                            3 bits	Used by DNSSEC queries. At inception, it was reserved for future use.
-    rcode: ResponseCode, // Response Code (RCODE)	    4 bits	Response code indicating the status of the response.
-    qdcount: u16, // Question Count (QDCOUNT)	        16 bits	Number of questions in the Question section. Expected value: 0.
-    ancount: u16, // Answer Record Count (ANCOUNT)	    16 bits	Number of records in the Answer section. Expected value: 0.
-    nscount: u16, // Authority Record Count (NSCOUNT)	16 bits	Number of records in the Authority section. Expected value: 0.
-    arcount: u16, // Additional Record Count (ARCOUNT)	16 bits	Number of records in the Additional section. Expected value: 0.
-}
-
-#[derive(PartialEq, Debug, Error)]
-pub(crate) enum ParseError {
-    #[error("expected 12 bytes, found {0}")]
-    InvalidLength(usize),
-    #[error("unparseable value: {0}")]
-    InvalidValue(u8),
+    pub id: u16, // Packet Identifier (ID)	                16 bits	A random ID assigned to query packets. Response packets must reply with the same ID.
+    pub qr: PacketType, // Query/Response Indicator (QR)    1 bit	1 for a response packet, 0 for a query packet.
+    pub opcode: OpCode, // Operation Code (OPCODE)          4 bits	Specifies the kind of query in a message.
+    pub aa: bool, // Authoritative Answer (AA)	            1 bit	1 if the responding server "owns" the domain queried, i.e., it's authoritative.
+    pub tc: bool, // Truncation (TC)	                    1 bit	1 if the message is larger than 512 bytes. Always 0 in UDP responses.
+    pub rd: bool, // Recursion Desired (RD)	                1 bit	Sender sets this to 1 if the server should recursively resolve this query, 0 otherwise.
+    pub ra: bool, // Recursion Available (RA)	            1 bit	Server sets this to 1 to indicate that recursion is available.
+    pub z: u8, // Reserved (Z)	                            3 bits	Used by DNSSEC queries. At inception, it was reserved for future use.
+    pub rcode: ResponseCode, // Response Code (RCODE)	    4 bits	Response code indicating the status of the response.
+    pub qdcount: u16, // Question Count (QDCOUNT)	        16 bits	Number of questions in the Question section. Expected value: 0.
+    pub ancount: u16, // Answer Record Count (ANCOUNT)	    16 bits	Number of records in the Answer section. Expected value: 0.
+    pub nscount: u16, // Authority Record Count (NSCOUNT)	16 bits	Number of records in the Authority section. Expected value: 0.
+    pub arcount: u16, // Additional Record Count (ARCOUNT)	16 bits	Number of records in the Additional section. Expected value: 0.
 }
 
 #[derive(PartialEq, Debug, Clone, Copy)]
@@ -84,10 +76,6 @@ impl TryFrom<&[u8]> for DnsHeader {
     type Error = ParseError;
 
     fn try_from(bytes: &[u8]) -> Result<DnsHeader, Self::Error> {
-        if bytes.len() != 12 {
-            return Err(ParseError::InvalidLength(bytes.len()));
-        }
-
         let id: u16 = (bytes[0] as u16) << 8 | bytes[1] as u16;
 
         let qr = PacketType::try_from(bytes[2] >> 7)?;

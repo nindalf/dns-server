@@ -1,4 +1,7 @@
+mod error;
 mod header;
+mod packet;
+mod question;
 
 use std::net::UdpSocket;
 
@@ -10,10 +13,11 @@ fn main() {
         match udp_socket.recv_from(&mut buf) {
             Ok((size, source)) => {
                 println!("Received {} bytes from {}", size, source);
-                let received = &buf[..12];
-                let mut header = header::DnsHeader::try_from(received).unwrap();
-                header.flip_qr();
-                let response = header.to_bytes();
+                let received = &buf[..size];
+                let mut packet = packet::DnsPacket::try_from(received).unwrap();
+                packet.header.flip_qr();
+                packet.header.qdcount = packet.questions.len() as u16;
+                let response = packet.to_bytes();
                 udp_socket
                     .send_to(&response, source)
                     .expect("Failed to send response");
