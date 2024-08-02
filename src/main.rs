@@ -1,3 +1,5 @@
+mod answer;
+mod common;
 mod error;
 mod header;
 mod packet;
@@ -17,6 +19,14 @@ fn main() {
                 let mut packet = packet::DnsPacket::try_from(received).unwrap();
                 packet.header.flip_qr();
                 packet.header.qdcount = packet.questions.len() as u16;
+                let answer = answer::DnsAnswer::new(
+                    "codecrafters.io".into(),
+                    common::DnsType::A,
+                    common::DnsClass::In,
+                    60,
+                    answer::RData::A([8, 8, 8, 8]),
+                );
+                packet.add_answer(answer);
                 let response = packet.to_bytes();
                 udp_socket
                     .send_to(&response, source)

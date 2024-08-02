@@ -1,8 +1,9 @@
-use crate::{error::ParseError, header::DnsHeader, question::DnsQuestion};
+use crate::{answer::DnsAnswer, error::ParseError, header::DnsHeader, question::DnsQuestion};
 
 pub(crate) struct DnsPacket {
     pub(crate) header: DnsHeader,
     pub(crate) questions: Vec<DnsQuestion>,
+    pub(crate) answers: Vec<DnsAnswer>,
 }
 
 impl DnsPacket {
@@ -22,13 +23,27 @@ impl DnsPacket {
             questions.push(question);
         }
 
-        Ok(DnsPacket { header, questions })
+        let answers = Vec::new();
+
+        Ok(DnsPacket {
+            header,
+            questions,
+            answers,
+        })
+    }
+
+    pub(crate) fn add_answer(&mut self, answer: DnsAnswer) {
+        self.header.ancount += 1;
+        self.answers.push(answer);
     }
 
     pub(crate) fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = self.header.to_bytes();
         for question in &self.questions {
             bytes.extend_from_slice(&question.to_bytes());
+        }
+        for answer in &self.answers {
+            bytes.extend_from_slice(&answer.to_bytes());
         }
         bytes
     }
