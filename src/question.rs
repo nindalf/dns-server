@@ -1,16 +1,16 @@
 use crate::error::ParseError;
 
 pub(crate) struct DnsQuestion {
-    pub qname: QuestionName,
-    pub qtype: QuestionType,
-    pub qclass: QuestionClass,
+    pub(crate) qname: QuestionName,
+    pub(crate) qtype: QuestionType,
+    pub(crate) qclass: QuestionClass,
 }
 
-struct QuestionName(String);
+pub(crate) struct QuestionName(String);
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 #[repr(u16)]
-enum QuestionType {
+pub(crate) enum QuestionType {
     A = 1,      // a host address
     Ns = 2,     // an authoritative name server
     Md = 3,     // a mail destination (Obsolete - use MX)
@@ -31,7 +31,7 @@ enum QuestionType {
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 #[repr(u16)]
-enum QuestionClass {
+pub(crate) enum QuestionClass {
     In = 1, // the Internet
     Cs = 2, // the CSNET class (Obsolete - used only for examples in some obsolete RFCs)
     Ch = 3, // the CHAOS class
